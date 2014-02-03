@@ -13,6 +13,12 @@ class EntityAuthorTagger extends Mapper[Writable, BytesWritable, MarkedText, Mar
   val outKey = new MarkedText(marked = true)
   val outValue = new MarkedBytesWritable(marked = true)
 
+  override def setup(context: Context) {
+    val marked = context.getConfiguration.getBoolean("coansys.citations.mark.citations", true)
+    outKey.isMarked.set(marked)
+    outValue.isMarked.set(marked)
+  }
+
   override def map(key: Writable, value: BytesWritable, context: Context) {
     val entity = MatchableEntity.fromBytes(value.copyBytes())
     val text = entity.rawText.getOrElse(List(entity.author, entity.year, entity.title).mkString(" "))
