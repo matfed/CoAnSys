@@ -71,7 +71,7 @@ class AuthorJoiner extends Reducer[MarkedText, MarkedBytesWritable, BytesWritabl
               2.0 * (srcTokens & dstTokens).size / (srcTokens.size + dstTokens.size)
             else
               0.0
-          q.enqueue((-similarity, entity))
+          q.enqueue((-similarity, doc))
         }
 
         val citBytes = entity.data.toByteArray
