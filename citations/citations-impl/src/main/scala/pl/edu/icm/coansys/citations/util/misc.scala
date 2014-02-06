@@ -133,7 +133,7 @@ object misc {
 
   def approximateYear(year: String) = for {
     diff <- -1 to 1
-    year <- Try(year.toInt).toOption
+    year <- Try(year.toInt).toOption if year > 1850 && year < 2050
   } yield (year + diff).toString
 
   val stopWords =
