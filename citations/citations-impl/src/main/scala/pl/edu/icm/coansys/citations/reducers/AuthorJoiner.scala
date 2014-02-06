@@ -51,18 +51,21 @@ class AuthorJoiner extends Reducer[MarkedText, MarkedBytesWritable, BytesWritabl
 
   val docs = new ListBuffer[MatchableEntity]
 
-  override def reduce(key: MarkedText, values: java.lang.Iterable[MarkedBytesWritable], context: Context) {
-    implicit val ordering = new Ordering[(Double, MatchableEntity)]{
-      def compare(x: (Double, MatchableEntity), y: (Double, MatchableEntity)): Int = x._1 compareTo y._1
-    }
+  implicit val ordering = new Ordering[(Double, MatchableEntity)]{
+    def compare(x: (Double, MatchableEntity), y: (Double, MatchableEntity)): Int = x._1 compareTo y._1
+  }
 
+  val queue = new LimitedPriorityQueue[(Double, MatchableEntity)]()
+
+  override def reduce(key: MarkedText, values: java.lang.Iterable[MarkedBytesWritable], context: Context) {
     for (value <- values) {
       val entity = MatchableEntity.fromBytes(value.bytes.copyBytes())
       if (value.isMarked.get()) {
         docs.append(entity)
       } else {
-        val q = new LimitedPriorityQueue[(Double, MatchableEntity)]()
-        docs.foreach{ doc =>
+        if (docs.isEmpty) return
+
+        docs.foreach { doc =>
           val srcTokens = niceTokens(entity.toReferenceString)
           val dstTokens = niceTokens(doc.toReferenceString)
 
@@ -71,12 +74,12 @@ class AuthorJoiner extends Reducer[MarkedText, MarkedBytesWritable, BytesWritabl
               2.0 * (srcTokens & dstTokens).size / (srcTokens.size + dstTokens.size)
             else
               0.0
-          q.enqueue((-similarity, doc))
+          queue.enqueue((-similarity, doc))
         }
 
         val citBytes = entity.data.toByteArray
         outKey.set(citBytes, 0, citBytes.length)
-        for((_, doc) <- q.toSeq) {
+        for((_, doc) <- queue.dequeueAll) {
           val docBytes = doc.data.toByteArray
           outValue.set(docBytes, 0, docBytes.length)
 
