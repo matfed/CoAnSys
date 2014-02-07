@@ -12,6 +12,7 @@ class EntityAuthorTagger extends Mapper[Writable, BytesWritable, MarkedText, Mar
   type Context = Mapper[Writable, BytesWritable, MarkedText, MarkedBytesWritable]#Context
   val outKey = new MarkedText(marked = true)
   val outValue = new MarkedBytesWritable(marked = true)
+  val tokenLimit = 20
 
   override def map(key: Writable, value: BytesWritable, context: Context) {
     val entity = MatchableEntity.fromBytes(value.copyBytes())
@@ -19,7 +20,7 @@ class EntityAuthorTagger extends Mapper[Writable, BytesWritable, MarkedText, Mar
     val keys = for {
       year <- digitsNormaliseTokenise(text).filter(_.length == 4)
       approxYear <- approximateYear(year)
-      author <- lettersNormaliseTokenise(text).distinct
+      author <- lettersNormaliseTokenise(text).take(tokenLimit).distinct
     } yield author + approxYear
 
     outValue.bytes.set(value)
