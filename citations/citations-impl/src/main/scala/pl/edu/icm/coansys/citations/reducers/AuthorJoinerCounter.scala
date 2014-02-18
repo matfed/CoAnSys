@@ -31,7 +31,7 @@ import scala.collection.mutable.ListBuffer
  * @author Mateusz Fedoryszak (m.fedoryszak@icm.edu.pl)
  */
 class AuthorJoinerCounter extends Reducer[MarkedText, MarkedBytesWritable, Text, Text] {
-  type Context = Reducer[MarkedText, MarkedBytesWritable, BytesWritable, BytesWritable]#Context
+  type Context = Reducer[MarkedText, MarkedBytesWritable, Text, Text]#Context
 
   val outKey = new Text()
   val outValue = new Text()
