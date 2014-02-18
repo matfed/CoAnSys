@@ -14,6 +14,12 @@ class AuthorIndexer extends Mapper[Writable, BytesWritable, MarkedText, MarkedBy
   val outKey = new MarkedText()
   val outValue = new MarkedBytesWritable()
 
+  override def setup(context: Context) {
+    val marked = context.getConfiguration.getBoolean("coansys.citations.mark.documents", false)
+    outKey.isMarked.set(marked)
+    outValue.isMarked.set(marked)
+  }
+
   override def map(key: Writable, value: BytesWritable, context: Context) {
     val entity = MatchableEntity.fromBytes(value.copyBytes())
     val authorTokens = misc.lettersNormaliseTokenise(entity.author).filterNot(stopWords).distinct
