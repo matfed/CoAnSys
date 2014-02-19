@@ -16,7 +16,7 @@
   ~ along with CoAnSys. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<workflow-app xmlns="uri:oozie:workflow:0.4" name="citations-core-workflow">
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="citations-counter-workflow">
     <parameters>
         <property>
             <name>jobTracker</name>
@@ -88,6 +88,9 @@
 
     <action name="heuristic-first-counter">
         <map-reduce>
+            <prepare>
+                <delete path="${output}"/>
+            </prepare>
             <configuration>
                 <property>
                     <name>mapreduce.inputformat.class</name>
